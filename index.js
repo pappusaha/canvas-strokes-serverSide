@@ -1,6 +1,6 @@
 const express =require('express')
 const cors=require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app=express()
 const port=process.env.PORT || 5000
@@ -17,7 +17,7 @@ app.use(express.json())
 
 
 const uri=`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.8bwej.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-console.log(uri)
+
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -40,6 +40,51 @@ async function run() {
         const result = await cursor.toArray()
         res.send(result)
 
+    })
+
+    app.get('/craftItems/:id',async (req, res)=> {
+      const id = req.params.id 
+      const query={_id: new ObjectId(id)}
+      const result=await artCollection.findOne(query)
+      res.send(result)
+
+    })
+    app.put('/craftItems/:id',async (req, res) => {
+     const id=req.params.id
+     const filter={_id : new ObjectId(id)}
+     const options = { upsert: true };
+     const updateDoc=req.body
+     const updateArtItems = {
+      $set: {
+        
+         email:updateDoc.email,
+          userName:updateDoc.userName,
+           imageURL:updateDoc.imageURL,
+            itemName:updateDoc.itemName,
+             subCategoryType:updateDoc.subCategoryType,
+              processingTime:updateDoc.processingTime,
+               price:updateDoc.price,
+                rating:updateDoc.rating, 
+                customization:updateDoc.customization, 
+                stockStatus:updateDoc.stockStatus,
+                 message:updateDoc.message,
+      },
+      
+
+    };
+    const result = await artCollection.updateOne(filter,updateArtItems,  options);
+   
+console.log(result)
+res.send(result)
+    })
+
+    // this Delete button 
+
+    app.delete('/craftItems/:id', async(req, res)=> {
+      const id=req.params.id
+      const query={_id: new ObjectId(id)}
+      const result= await artCollection.deleteOne(query)
+      res.send(result)
     })
     //  this is first post section This is Creation 
 
